@@ -488,12 +488,12 @@ export default function MyProjects() {
                 className="justify-start h-auto p-4"
                 asChild
               >
-                <Link to="/profile-setup">
+                <Link to="/enhanced-profile">
                   <Settings className="h-5 w-5 mr-3" />
                   <div className="text-left">
-                    <div className="font-medium">Update Profile</div>
+                    <div className="font-medium">AI-Enhanced Profile</div>
                     <div className="text-sm text-gray-600">
-                      Enhance your faculty profile
+                      Use LangChain to enhance your profile
                     </div>
                   </div>
                 </Link>

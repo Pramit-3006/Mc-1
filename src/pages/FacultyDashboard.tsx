@@ -205,7 +205,7 @@ export default function FacultyDashboard() {
             className="border-indigo-300 text-white hover:bg-indigo-500"
             asChild
           >
-            <Link to="/profile-setup">Update Profile</Link>
+            <Link to="/enhanced-profile">AI-Enhanced Profile</Link>
           </Button>
         </div>
       </div>
