@@ -54,25 +54,50 @@ export default function Profile() {
     }
 
     // Load user profile data
-    if (user.role === "faculty") {
+    if (user.role === 'faculty') {
       const facultyData = getFacultyById(user.id);
       if (facultyData) {
         setProfileData(facultyData);
+      } else {
+        // If no faculty data found, use basic user data
+        setProfileData(user as Faculty);
       }
 
       // Mock faculty projects
       setUserProjects([
         {
-          id: "1",
-          title: "AI-Powered Healthcare Diagnosis System",
-          description:
-            "Develop a machine learning system to assist doctors in early disease detection using medical imaging and patient data.",
-          type: "PROJECT",
+          id: '1',
+          title: 'AI-Powered Healthcare Diagnosis System',
+          description: 'Develop a machine learning system to assist doctors in early disease detection using medical imaging and patient data.',
+          type: 'PROJECT',
           facultyId: user.id,
-          requiredSkills: [
-            "Python",
-            "TensorFlow",
-            "Computer Vision",
+          requiredSkills: ['Python', 'TensorFlow', 'Computer Vision', 'Medical Imaging'],
+          duration: '6 months',
+          difficulty: 'advanced',
+          maxStudents: 3,
+          currentStudents: 2,
+          createdAt: new Date('2024-01-20T00:00:00Z'),
+        } as ProjectIdea
+      ]);
+    } else {
+      // Student profile
+      setProfileData(user as Student);
+
+      // Mock student projects
+      setUserProjects([
+        {
+          id: '1',
+          studentId: user.id,
+          facultyId: '2',
+          projectType: 'RESEARCH_PAPER',
+          ideaType: 'own_idea',
+          title: 'Natural Language Processing in Healthcare',
+          description: 'Research on improving patient-doctor communication through AI-powered language understanding.',
+          status: 'accepted',
+          createdAt: new Date('2024-01-15T00:00:00Z'),
+        } as ProjectRequest
+      ]);
+    }
             "Medical Imaging",
           ],
           duration: "6 months",
@@ -113,11 +138,27 @@ export default function Profile() {
       .slice(0, 2);
   };
 
-  const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat("en-US", {
-      month: "long",
-      year: "numeric",
-    }).format(date);
+  const formatDate = (date: Date | string | undefined) => {
+    if (!date) {
+      return 'Unknown';
+    }
+
+    try {
+      const dateObj = typeof date === 'string' ? new Date(date) : date;
+
+      // Check if the date is valid
+      if (isNaN(dateObj.getTime())) {
+        return 'Unknown';
+      }
+
+      return new Intl.DateTimeFormat('en-US', {
+        month: 'long',
+        year: 'numeric'
+      }).format(dateObj);
+    } catch (error) {
+      console.warn('Error formatting date:', error);
+      return 'Unknown';
+    }
   };
 
   if (!user || !profileData) {
@@ -172,15 +213,15 @@ export default function Profile() {
               <CardContent className="p-8">
                 <div className="flex items-start gap-6">
                   <Avatar className="h-24 w-24">
-                    <AvatarImage src={user.avatar} alt={user.name} />
+                    <AvatarImage src={user?.avatar} alt={user?.name || 'User'} />
                     <AvatarFallback className="text-2xl">
-                      {getInitials(user.name)}
+                      {getInitials(user?.name || 'Unknown User')}
                     </AvatarFallback>
                   </Avatar>
 
                   <div className="flex-1">
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                      {user.name}
+                      {user?.name || 'Unknown User'}
                     </h1>
 
                     {isFaculty ? (
@@ -239,7 +280,7 @@ export default function Profile() {
 
                     <div className="flex items-center gap-1 text-sm text-gray-500">
                       <Calendar className="h-3 w-3" />
-                      <span>Member since {formatDate(user.createdAt)}</span>
+                      <span>Member since {formatDate(user?.createdAt)}</span>
                     </div>
                   </div>
                 </div>
@@ -441,7 +482,7 @@ export default function Profile() {
               <CardContent className="space-y-3">
                 <div className="flex items-center gap-3">
                   <Mail className="h-4 w-4 text-gray-600" />
-                  <span className="text-sm">{user.email}</span>
+                  <span className="text-sm">{user?.email || 'No email provided'}</span>
                 </div>
 
                 {isFaculty && (
