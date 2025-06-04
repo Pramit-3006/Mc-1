@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import ProjectSelection from "./pages/ProjectSelection";
 import IdeaSelection from "./pages/IdeaSelection";
 import FacultyBrowse from "./pages/FacultyBrowse";
+import ProjectRequest from "./pages/ProjectRequest";
 import MyProjects from "./pages/MyProjects";
 import MyAbstracts from "./pages/MyAbstracts";
 import AbstractSubmission from "./pages/AbstractSubmission";
@@ -34,6 +35,7 @@ const App = () => (
             <Route path="/idea-selection" element={<IdeaSelection />} />
             <Route path="/faculty-browse" element={<FacultyBrowse />} />
             <Route path="/browse-faculty" element={<FacultyBrowse />} />
+            <Route path="/project-request" element={<ProjectRequest />} />
             <Route path="/my-projects" element={<MyProjects />} />
             <Route path="/my-abstracts" element={<MyAbstracts />} />
             <Route
