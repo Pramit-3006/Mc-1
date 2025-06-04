@@ -17,6 +17,7 @@ import MyAbstracts from "./pages/MyAbstracts";
 import AbstractSubmission from "./pages/AbstractSubmission";
 import ProfileSetup from "./pages/ProfileSetup";
 import EnhancedProfileSetup from "./pages/EnhancedProfileSetup";
+import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -50,6 +51,7 @@ const App = () => (
               path="/enhanced-profile"
               element={<EnhancedProfileSetup />}
             />
+            <Route path="/profile" element={<Profile />} />
             <Route path="/settings" element={<Settings />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
