@@ -7,7 +7,10 @@ const mockUsers: User[] = [
     email: "john.student@university.edu",
     name: "John Smith",
     role: "student",
-    createdAt: new Date("2024-01-15"),
+    createdAt: new Date("2024-01-15T00:00:00Z"),
+    department: "Computer Science",
+    year: "3rd Year",
+    interests: ["Machine Learning", "Web Development", "AI"],
   } as Student,
   {
     id: "2",
@@ -26,7 +29,7 @@ const mockUsers: User[] = [
     ],
     publications: 45,
     activeProjects: 3,
-    createdAt: new Date("2024-01-10"),
+    createdAt: new Date("2024-01-10T00:00:00Z"),
   } as Faculty,
   {
     id: "3",
@@ -41,7 +44,7 @@ const mockUsers: User[] = [
     researchAreas: ["Smart Cities", "Industrial IoT", "Autonomous Systems"],
     publications: 78,
     activeProjects: 5,
-    createdAt: new Date("2024-01-05"),
+    createdAt: new Date("2024-01-05T00:00:00Z"),
   } as Faculty,
 ];
 
@@ -89,7 +92,19 @@ export const registerUser = async (
 
 export const getCurrentUser = (): User | null => {
   const userData = localStorage.getItem("currentUser");
-  return userData ? JSON.parse(userData) : null;
+  if (!userData) return null;
+
+  try {
+    const user = JSON.parse(userData);
+    // Ensure createdAt is a proper Date object
+    if (user.createdAt) {
+      user.createdAt = new Date(user.createdAt);
+    }
+    return user;
+  } catch (error) {
+    console.error("Error parsing user data:", error);
+    return null;
+  }
 };
 
 export const setCurrentUser = (user: User | null): void => {
