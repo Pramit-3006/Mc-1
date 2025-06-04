@@ -10,6 +10,10 @@ import Dashboard from "./pages/Dashboard";
 import ProjectSelection from "./pages/ProjectSelection";
 import IdeaSelection from "./pages/IdeaSelection";
 import FacultyBrowse from "./pages/FacultyBrowse";
+import MyProjects from "./pages/MyProjects";
+import MyAbstracts from "./pages/MyAbstracts";
+import AbstractSubmission from "./pages/AbstractSubmission";
+import ProfileSetup from "./pages/ProfileSetup";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +33,13 @@ const App = () => (
             <Route path="/idea-selection" element={<IdeaSelection />} />
             <Route path="/faculty-browse" element={<FacultyBrowse />} />
             <Route path="/browse-faculty" element={<FacultyBrowse />} />
+            <Route path="/my-projects" element={<MyProjects />} />
+            <Route path="/my-abstracts" element={<MyAbstracts />} />
+            <Route
+              path="/abstract-submission"
+              element={<AbstractSubmission />}
+            />
+            <Route path="/profile-setup" element={<ProfileSetup />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
