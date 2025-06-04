@@ -14,6 +14,7 @@ import MyProjects from "./pages/MyProjects";
 import MyAbstracts from "./pages/MyAbstracts";
 import AbstractSubmission from "./pages/AbstractSubmission";
 import ProfileSetup from "./pages/ProfileSetup";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,6 +41,7 @@ const App = () => (
               element={<AbstractSubmission />}
             />
             <Route path="/profile-setup" element={<ProfileSetup />} />
+            <Route path="/settings" element={<Settings />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
