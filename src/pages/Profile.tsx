@@ -13,7 +13,6 @@ import { Badge } from "../components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import { Separator } from "../components/ui/separator";
 import { Progress } from "../components/ui/progress";
-import { ProjectCard } from "../components/ProjectCard";
 import {
   ArrowLeft,
   User,
@@ -33,7 +32,7 @@ import {
   Settings,
   Zap,
 } from "lucide-react";
-import { getFacultyById, getAllFaculty } from "../lib/auth";
+import { getFacultyById } from "../lib/auth";
 import { Faculty, Student, ProjectIdea, ProjectRequest } from "../lib/types";
 
 export default function Profile() {
@@ -54,7 +53,7 @@ export default function Profile() {
     }
 
     // Load user profile data
-    if (user.role === 'faculty') {
+    if (user.role === "faculty") {
       const facultyData = getFacultyById(user.id);
       if (facultyData) {
         setProfileData(facultyData);
@@ -66,45 +65,23 @@ export default function Profile() {
       // Mock faculty projects
       setUserProjects([
         {
-          id: '1',
-          title: 'AI-Powered Healthcare Diagnosis System',
-          description: 'Develop a machine learning system to assist doctors in early disease detection using medical imaging and patient data.',
-          type: 'PROJECT',
+          id: "1",
+          title: "AI-Powered Healthcare Diagnosis System",
+          description:
+            "Develop a machine learning system to assist doctors in early disease detection using medical imaging and patient data.",
+          type: "PROJECT",
           facultyId: user.id,
-          requiredSkills: ['Python', 'TensorFlow', 'Computer Vision', 'Medical Imaging'],
-          duration: '6 months',
-          difficulty: 'advanced',
-          maxStudents: 3,
-          currentStudents: 2,
-          createdAt: new Date('2024-01-20T00:00:00Z'),
-        } as ProjectIdea
-      ]);
-    } else {
-      // Student profile
-      setProfileData(user as Student);
-
-      // Mock student projects
-      setUserProjects([
-        {
-          id: '1',
-          studentId: user.id,
-          facultyId: '2',
-          projectType: 'RESEARCH_PAPER',
-          ideaType: 'own_idea',
-          title: 'Natural Language Processing in Healthcare',
-          description: 'Research on improving patient-doctor communication through AI-powered language understanding.',
-          status: 'accepted',
-          createdAt: new Date('2024-01-15T00:00:00Z'),
-        } as ProjectRequest
-      ]);
-    }
+          requiredSkills: [
+            "Python",
+            "TensorFlow",
+            "Computer Vision",
             "Medical Imaging",
           ],
           duration: "6 months",
           difficulty: "advanced",
           maxStudents: 3,
           currentStudents: 2,
-          createdAt: new Date("2024-01-20"),
+          createdAt: new Date("2024-01-20T00:00:00Z"),
         } as ProjectIdea,
       ]);
     } else {
@@ -123,13 +100,14 @@ export default function Profile() {
           description:
             "Research on improving patient-doctor communication through AI-powered language understanding.",
           status: "accepted",
-          createdAt: new Date("2024-01-15"),
+          createdAt: new Date("2024-01-15T00:00:00Z"),
         } as ProjectRequest,
       ]);
     }
   }, [user, navigate]);
 
   const getInitials = (name: string) => {
+    if (!name) return "U";
     return name
       .split(" ")
       .map((part) => part[0])
@@ -140,24 +118,24 @@ export default function Profile() {
 
   const formatDate = (date: Date | string | undefined) => {
     if (!date) {
-      return 'Unknown';
+      return "Unknown";
     }
 
     try {
-      const dateObj = typeof date === 'string' ? new Date(date) : date;
+      const dateObj = typeof date === "string" ? new Date(date) : date;
 
       // Check if the date is valid
       if (isNaN(dateObj.getTime())) {
-        return 'Unknown';
+        return "Unknown";
       }
 
-      return new Intl.DateTimeFormat('en-US', {
-        month: 'long',
-        year: 'numeric'
+      return new Intl.DateTimeFormat("en-US", {
+        month: "long",
+        year: "numeric",
       }).format(dateObj);
     } catch (error) {
-      console.warn('Error formatting date:', error);
-      return 'Unknown';
+      console.warn("Error formatting date:", error);
+      return "Unknown";
     }
   };
 
@@ -213,40 +191,46 @@ export default function Profile() {
               <CardContent className="p-8">
                 <div className="flex items-start gap-6">
                   <Avatar className="h-24 w-24">
-                    <AvatarImage src={user?.avatar} alt={user?.name || 'User'} />
+                    <AvatarImage
+                      src={user?.avatar}
+                      alt={user?.name || "User"}
+                    />
                     <AvatarFallback className="text-2xl">
-                      {getInitials(user?.name || 'Unknown User')}
+                      {getInitials(user?.name || "Unknown User")}
                     </AvatarFallback>
                   </Avatar>
 
                   <div className="flex-1">
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                      {user?.name || 'Unknown User'}
+                      {user?.name || "Unknown User"}
                     </h1>
 
                     {isFaculty ? (
                       <>
                         <p className="text-xl text-gray-600 mb-3">
-                          {facultyData?.position}
+                          {facultyData?.position || "Faculty Member"}
                         </p>
                         <div className="flex items-center gap-4 text-gray-600 mb-4">
                           <div className="flex items-center gap-1">
                             <Building className="h-4 w-4" />
-                            {facultyData?.department}
+                            {facultyData?.department || "Unknown Department"}
                           </div>
                           <div className="flex items-center gap-1">
                             <GraduationCap className="h-4 w-4" />
-                            {facultyData?.experience} years experience
+                            {facultyData?.experience || 0} years experience
                           </div>
                         </div>
 
-                        <div className="flex flex-wrap gap-2 mb-4">
-                          {facultyData?.specialization.map((spec, index) => (
-                            <Badge key={index} variant="secondary">
-                              {spec}
-                            </Badge>
-                          ))}
-                        </div>
+                        {facultyData?.specialization &&
+                          facultyData.specialization.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mb-4">
+                              {facultyData.specialization.map((spec, index) => (
+                                <Badge key={index} variant="secondary">
+                                  {spec}
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
                       </>
                     ) : (
                       <>
@@ -266,15 +250,16 @@ export default function Profile() {
                           )}
                         </div>
 
-                        {studentData?.interests && (
-                          <div className="flex flex-wrap gap-2 mb-4">
-                            {studentData.interests.map((interest, index) => (
-                              <Badge key={index} variant="secondary">
-                                {interest}
-                              </Badge>
-                            ))}
-                          </div>
-                        )}
+                        {studentData?.interests &&
+                          studentData.interests.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mb-4">
+                              {studentData.interests.map((interest, index) => (
+                                <Badge key={index} variant="secondary">
+                                  {interest}
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
                       </>
                     )}
 
@@ -288,28 +273,26 @@ export default function Profile() {
             </Card>
 
             {/* About Section */}
-            {(facultyData?.bio || studentData) && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>About</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {isFaculty ? (
-                    <p className="text-gray-700 leading-relaxed">
-                      {facultyData?.bio ||
-                        "No bio available. Update your profile to add a professional bio."}
-                    </p>
-                  ) : (
-                    <p className="text-gray-700 leading-relaxed">
-                      I'm a {studentData?.year || ""} student in{" "}
-                      {studentData?.department || "the university"}, passionate
-                      about research and innovation. Looking for opportunities
-                      to collaborate with faculty members on exciting projects.
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
-            )}
+            <Card>
+              <CardHeader>
+                <CardTitle>About</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {isFaculty ? (
+                  <p className="text-gray-700 leading-relaxed">
+                    {facultyData?.bio ||
+                      "No bio available. Update your profile to add a professional bio."}
+                  </p>
+                ) : (
+                  <p className="text-gray-700 leading-relaxed">
+                    I'm a {studentData?.year || ""} student in{" "}
+                    {studentData?.department || "the university"}, passionate
+                    about research and innovation. Looking for opportunities to
+                    collaborate with faculty members on exciting projects.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
 
             {/* Research Areas (Faculty only) */}
             {isFaculty &&
@@ -482,7 +465,9 @@ export default function Profile() {
               <CardContent className="space-y-3">
                 <div className="flex items-center gap-3">
                   <Mail className="h-4 w-4 text-gray-600" />
-                  <span className="text-sm">{user?.email || 'No email provided'}</span>
+                  <span className="text-sm">
+                    {user?.email || "No email provided"}
+                  </span>
                 </div>
 
                 {isFaculty && (
@@ -544,7 +529,7 @@ export default function Profile() {
                       Years Teaching
                     </span>
                     <span className="font-medium">
-                      {facultyData?.experience}
+                      {facultyData?.experience || 0}
                     </span>
                   </div>
 
