@@ -131,7 +131,7 @@ export default function Login() {
               <GraduationCap className="h-6 w-6 text-white" />
             </div>
             <span className="text-2xl font-bold text-gray-900">
-              AcademicHub
+              MentorsConnect
             </span>
           </Link>
           <p className="text-gray-600">
@@ -142,7 +142,7 @@ export default function Login() {
         <Card>
           <CardHeader>
             <CardTitle className="text-2xl text-center">
-              {activeTab === "login" ? "Welcome Back" : "Join AcademicHub"}
+              {activeTab === "login" ? "Welcome Back" : "Join MentorsConnect"}
             </CardTitle>
             <CardDescription className="text-center">
               {activeTab === "login"

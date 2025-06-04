@@ -69,7 +69,7 @@ const Index = () => {
                   <GraduationCap className="h-5 w-5 text-white" />
                 </div>
                 <span className="text-xl font-bold text-gray-900">
-                  AcademicHub
+                  MentorsConnect
                 </span>
               </div>
             </div>
@@ -109,7 +109,7 @@ const Index = () => {
               </span>
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-              AcademicHub bridges the gap between ambitious students and
+              MentorsConnect bridges the gap between ambitious students and
               experienced faculty members, facilitating collaborative research,
               innovative projects, and patent development.
             </p>
@@ -213,7 +213,7 @@ const Index = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
               <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                Why Choose AcademicHub?
+                Why Choose MentorsConnect?
               </h2>
               <p className="text-lg text-gray-600 mb-8">
                 Our platform is designed to streamline academic collaboration
@@ -287,9 +287,8 @@ const Index = () => {
           </h2>
           <p className="text-xl text-blue-100 mb-8">
             Join thousands of students and faculty already collaborating on
-            AcademicHub
+            MentorsConnect
           </p>
-
           {!user && (
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
@@ -322,13 +321,13 @@ const Index = () => {
             <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
               <GraduationCap className="h-5 w-5 text-white" />
             </div>
-            <span className="text-xl font-bold">AcademicHub</span>
+            <span className="text-xl font-bold">MentorsConnect</span>
           </div>
           <p className="text-gray-400 mb-4">
             Empowering academic collaboration between students and faculty
           </p>
           <p className="text-gray-500 text-sm">
-            © 2024 AcademicHub. All rights reserved.
+            © 2024 MentorsConnect. All rights reserved.
           </p>
         </div>
       </footer>
