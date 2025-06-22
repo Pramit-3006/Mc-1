@@ -40,29 +40,77 @@ export interface ProcessingResult {
 }
 
 // Mock LangChain processing function
-// In production, replace this with actual LangChain API calls
+import { OpenAI } from 'langchain/llms/openai';
+import { Document } from 'langchain/document';
+import { PDFLoader } from 'langchain/document_loaders/fs/pdf';
+import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
+import { RunnableSequence } from 'langchain/schema/runnable';
+import fs from 'fs/promises';
+import path from 'path';
+import os from 'os';
+
+import type { ProcessingResult, ResumeAnalysis } from './types';
+
 export const processResumeWithLangChain = async (
   file: File,
 ): Promise<ProcessingResult> => {
   try {
-    // Simulate processing time
-    await new Promise((resolve) => setTimeout(resolve, 3000));
+    // Save uploaded file to a temp location
+    const tempPath = path.join(os.tmpdir(), file.name);
+    await fs.writeFile(tempPath, Buffer.from(await file.arrayBuffer()));
 
-    // Validate file type
-    const allowedTypes = [
-      "application/pdf",
-      "application/msword",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    ];
-    if (!allowedTypes.includes(file.type)) {
-      return {
-        success: false,
-        error:
-          "Unsupported file format. Please upload PDF, DOC, or DOCX files.",
-        confidence: 0,
-      };
-    }
+    // Load PDF using LangChain
+    const loader = new PDFLoader(tempPath);
+    const docs: Document[] = await loader.load();
 
+    // Split content
+    const splitter = new RecursiveCharacterTextSplitter({
+      chunkSize: 1000,
+      chunkOverlap: 100,
+    });
+    const splitDocs = await splitter.splitDocuments(docs);
+
+    // Prepare prompt with system & user messages
+    const llm = new OpenAI({
+      modelName: 'gpt-4', // or gpt-3.5-turbo
+      temperature: 0.2,
+      openAIApiKey: process.env.OPENAI_API_KEY, // ensure this is set
+    });
+
+    const resumeText = splitDocs.map((doc) => doc.pageContent).join('\n\n');
+
+    const chain = RunnableSequence.from([
+      async (input: string) => `Extract structured resume data from the following text in JSON format with keys: personalInfo, education, experience, skills, research, achievements, languages, certifications.\n\nResume:\n${input}`,
+      llm,
+      async (output: string) => {
+        try {
+          const data: ResumeAnalysis = JSON.parse(output);
+          return {
+            success: true,
+            analysis: data,
+            confidence: 0.9,
+          };
+        } catch (e) {
+          return {
+            success: false,
+            error: 'Failed to parse resume analysis output.',
+            confidence: 0,
+          };
+        }
+      },
+    ]);
+
+    const result = await chain.invoke(resumeText);
+    return result as ProcessingResult;
+  } catch (error) {
+    console.error('LangChain processing error:', error);
+    return {
+      success: false,
+      error: 'Resume processing failed with LangChain API.',
+      confidence: 0,
+    };
+  }
+};
     // Simulate file size check (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       return {
