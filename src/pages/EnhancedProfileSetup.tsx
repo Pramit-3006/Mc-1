@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Button } from "../components/ui/button";
@@ -22,7 +22,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../components/ui/select";
-import { ArrowLeft, Upload, User, BookOpen, CheckCircle, AlertCircle, Sparkles } from "lucide-react";
+import { Separator } from "../components/ui/separator";
+import {
+  ArrowLeft,
+  Upload,
+  User,
+  BookOpen,
+  Award,
+  Plus,
+  X,
+  CheckCircle,
+  AlertCircle,
+  FileText,
+  Sparkles,
+  RefreshCw,
+  Download,
+  Eye,
+  Zap,
+} from "lucide-react";
 import {
   processResumeWithLangChain,
   suggestProfileImprovements,
@@ -38,7 +55,9 @@ export default function EnhancedProfileSetup() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const [resumeAnalysis, setResumeAnalysis] = useState<ResumeAnalysis | null>(null);
+  const [resumeAnalysis, setResumeAnalysis] = useState<ResumeAnalysis | null>(
+    null,
+  );
   const [processingProgress, setProcessingProgress] = useState(0);
   const [profileScore, setProfileScore] = useState(0);
   const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -54,7 +73,9 @@ export default function EnhancedProfileSetup() {
     specialization: [] as string[],
     publications: "",
     currentProjects: "",
+    office: "",
     phone: "",
+    website: "",
     skills: [] as string[],
     languages: [] as string[],
     certifications: [] as string[],
@@ -139,11 +160,13 @@ export default function EnhancedProfileSetup() {
       name: analysis.personalInfo.name || prev.name,
       email: analysis.personalInfo.email || prev.email,
       phone: analysis.personalInfo.phone || prev.phone,
-      bio: analysis.summary || prev.bio,
-      publications: analysis.research.publications?.toString() || prev.publications,
-      currentProjects: analysis.research.projects?.toString() || prev.currentProjects,
+      bio: analysis.experience[0]?.description || prev.bio,
+      publications:
+        analysis.research.publications?.length.toString() || prev.publications,
+      currentProjects:
+        analysis.research.projects?.length.toString() || prev.currentProjects,
       researchAreas: analysis.research.areas || prev.researchAreas,
-      specialization: analysis.specializations || prev.specialization,
+      specialization: analysis.skills?.slice(0, 6) || prev.specialization,
       skills: analysis.skills || prev.skills,
       languages: analysis.languages || prev.languages,
       certifications: analysis.certifications || prev.certifications,
@@ -151,7 +174,10 @@ export default function EnhancedProfileSetup() {
   };
 
   const addSpecialization = () => {
-    if (newSpecialization.trim() && !formData.specialization.includes(newSpecialization.trim())) {
+    if (
+      newSpecialization.trim() &&
+      !formData.specialization.includes(newSpecialization.trim())
+    ) {
       setFormData((prev) => ({
         ...prev,
         specialization: [...prev.specialization, newSpecialization.trim()],
@@ -168,7 +194,10 @@ export default function EnhancedProfileSetup() {
   };
 
   const addResearchArea = () => {
-    if (newResearchArea.trim() && !formData.researchAreas.includes(newResearchArea.trim())) {
+    if (
+      newResearchArea.trim() &&
+      !formData.researchAreas.includes(newResearchArea.trim())
+    ) {
       setFormData((prev) => ({
         ...prev,
         researchAreas: [...prev.researchAreas, newResearchArea.trim()],
@@ -228,6 +257,8 @@ export default function EnhancedProfileSetup() {
     setIsSubmitting(true);
 
     try {
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
       const profileData = {
         ...formData,
         resumeAnalysis,
@@ -301,7 +332,7 @@ export default function EnhancedProfileSetup() {
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-6">
             <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg">
-              <User  className="h-6 w-6 text-white" />
+              <User className="h-6 w-6 text-white" />
             </div>
             <div>
               <h2 className="text-2xl font-bold text-gray-900">
@@ -354,7 +385,7 @@ export default function EnhancedProfileSetup() {
               <Card className="border-2 border-dashed border-blue-300 bg-blue-50">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Upload className="h-5 w-5 text-blue-600" />
+                    <Zap className="h-5 w-5 text-blue-600" />
                     AI-Powered Resume Analysis
                   </CardTitle>
                   <CardDescription>
@@ -468,7 +499,7 @@ export default function EnhancedProfileSetup() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <User  className="h-5 w-5" />
+                    <User className="h-5 w-5" />
                     Basic Information
                     {resumeAnalysis && (
                       <Badge variant="secondary" className="ml-2">
@@ -534,3 +565,353 @@ export default function EnhancedProfileSetup() {
                           </SelectItem>
                           <SelectItem value="Physics">Physics</SelectItem>
                           <SelectItem value="Chemistry">Chemistry</SelectItem>
+                          <SelectItem value="Biology">Biology</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="position">Position</Label>
+                      <Select
+                        value={formData.position}
+                        onValueChange={(value) =>
+                          handleInputChange("position", value)
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select your position" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Assistant Professor">
+                            Assistant Professor
+                          </SelectItem>
+                          <SelectItem value="Associate Professor">
+                            Associate Professor
+                          </SelectItem>
+                          <SelectItem value="Professor">Professor</SelectItem>
+                          <SelectItem value="Distinguished Professor">
+                            Distinguished Professor
+                          </SelectItem>
+                          <SelectItem value="Research Fellow">
+                            Research Fellow
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="experience">Years of Experience</Label>
+                      <Input
+                        id="experience"
+                        type="number"
+                        min="0"
+                        max="50"
+                        value={formData.experience}
+                        onChange={(e) =>
+                          handleInputChange("experience", e.target.value)
+                        }
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="phone">Phone Number</Label>
+                      <Input
+                        id="phone"
+                        value={formData.phone}
+                        onChange={(e) =>
+                          handleInputChange("phone", e.target.value)
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="bio">Professional Bio</Label>
+                    <Textarea
+                      id="bio"
+                      placeholder="Write a compelling bio that highlights your expertise and research interests..."
+                      value={formData.bio}
+                      onChange={(e) => handleInputChange("bio", e.target.value)}
+                      className="min-h-[100px]"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Academic Information */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BookOpen className="h-5 w-5" />
+                    Academic Information
+                    {resumeAnalysis && (
+                      <Badge variant="secondary" className="ml-2">
+                        <Sparkles className="h-3 w-3 mr-1" />
+                        AI Enhanced
+                      </Badge>
+                    )}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Specializations */}
+                  <div>
+                    <Label>Areas of Specialization</Label>
+                    <div className="flex gap-2 mb-2">
+                      <Input
+                        placeholder="Add specialization"
+                        value={newSpecialization}
+                        onChange={(e) => setNewSpecialization(e.target.value)}
+                        onKeyPress={(e) =>
+                          e.key === "Enter" &&
+                          (e.preventDefault(), addSpecialization())
+                        }
+                      />
+                      <Button
+                        type="button"
+                        onClick={addSpecialization}
+                        size="sm"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {formData.specialization.map((spec, index) => (
+                        <Badge
+                          key={index}
+                          variant="secondary"
+                          className="flex items-center gap-1"
+                        >
+                          {spec}
+                          <button
+                            type="button"
+                            onClick={() => removeSpecialization(index)}
+                            className="ml-1 hover:bg-gray-200 rounded-full p-0.5"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Research Areas */}
+                  <div>
+                    <Label>Research Areas</Label>
+                    <div className="flex gap-2 mb-2">
+                      <Input
+                        placeholder="Add research area"
+                        value={newResearchArea}
+                        onChange={(e) => setNewResearchArea(e.target.value)}
+                        onKeyPress={(e) =>
+                          e.key === "Enter" &&
+                          (e.preventDefault(), addResearchArea())
+                        }
+                      />
+                      <Button type="button" onClick={addResearchArea} size="sm">
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {formData.researchAreas.map((area, index) => (
+                        <Badge
+                          key={index}
+                          variant="outline"
+                          className="flex items-center gap-1"
+                        >
+                          {area}
+                          <button
+                            type="button"
+                            onClick={() => removeResearchArea(index)}
+                            className="ml-1 hover:bg-gray-200 rounded-full p-0.5"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Skills */}
+                  <div>
+                    <Label>Technical Skills</Label>
+                    <div className="flex gap-2 mb-2">
+                      <Input
+                        placeholder="Add skill"
+                        value={newSkill}
+                        onChange={(e) => setNewSkill(e.target.value)}
+                        onKeyPress={(e) =>
+                          e.key === "Enter" && (e.preventDefault(), addSkill())
+                        }
+                      />
+                      <Button type="button" onClick={addSkill} size="sm">
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {formData.skills.map((skill, index) => (
+                        <Badge
+                          key={index}
+                          variant="outline"
+                          className="flex items-center gap-1"
+                        >
+                          {skill}
+                          <button
+                            type="button"
+                            onClick={() => removeSkill(index)}
+                            className="ml-1 hover:bg-gray-200 rounded-full p-0.5"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="publications">
+                        Number of Publications
+                      </Label>
+                      <Input
+                        id="publications"
+                        type="number"
+                        min="0"
+                        value={formData.publications}
+                        onChange={(e) =>
+                          handleInputChange("publications", e.target.value)
+                        }
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="currentProjects">
+                        Current Active Projects
+                      </Label>
+                      <Input
+                        id="currentProjects"
+                        type="number"
+                        min="0"
+                        value={formData.currentProjects}
+                        onChange={(e) =>
+                          handleInputChange("currentProjects", e.target.value)
+                        }
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Submit Button */}
+              <div className="flex justify-end gap-4">
+                <Button
+                  variant="outline"
+                  type="button"
+                  onClick={() => navigate("/dashboard")}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={isSubmitting} className="px-8">
+                  {isSubmitting ? "Saving Profile..." : "Save Enhanced Profile"}
+                </Button>
+              </div>
+            </form>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* AI Suggestions */}
+            {suggestions.length > 0 && (
+              <Card className="border-amber-200 bg-amber-50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-amber-600" />
+                    AI Suggestions
+                  </CardTitle>
+                  <CardDescription>
+                    Recommendations to improve your profile
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {suggestions.map((suggestion, index) => (
+                    <div key={index} className="flex items-start gap-2">
+                      <div className="w-2 h-2 bg-amber-500 rounded-full mt-2 flex-shrink-0"></div>
+                      <p className="text-sm text-amber-800">{suggestion}</p>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Resume Analysis Summary */}
+            {resumeAnalysis && (
+              <Card className="border-blue-200 bg-blue-50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <FileText className="h-5 w-5 text-blue-600" />
+                    Resume Analysis
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div className="text-center p-2 bg-white rounded">
+                      <p className="font-bold text-blue-600">
+                        {resumeAnalysis.education.length}
+                      </p>
+                      <p className="text-gray-600">Degrees</p>
+                    </div>
+                    <div className="text-center p-2 bg-white rounded">
+                      <p className="font-bold text-green-600">
+                        {resumeAnalysis.experience.length}
+                      </p>
+                      <p className="text-gray-600">Positions</p>
+                    </div>
+                    <div className="text-center p-2 bg-white rounded">
+                      <p className="font-bold text-purple-600">
+                        {resumeAnalysis.research.publications?.length || 0}
+                      </p>
+                      <p className="text-gray-600">Publications</p>
+                    </div>
+                    <div className="text-center p-2 bg-white rounded">
+                      <p className="font-bold text-orange-600">
+                        {resumeAnalysis.achievements.length}
+                      </p>
+                      <p className="text-gray-600">Awards</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Help */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Need Help?</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 text-sm">
+                <div className="flex items-start gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span>Upload your resume for instant profile completion</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span>
+                    AI extracts skills, experience, and research areas
+                  </span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span>Get personalized suggestions for improvement</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span>Track your profile completeness score</span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
