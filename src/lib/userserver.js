@@ -144,3 +144,61 @@ const PORT = process.env.PORT || 3306;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
+// projects and requests endpoints
+
+// Get requests for a faculty
+app.get('/api/faculty/:id/requests', async (req, res) => {
+  const facultyId = req.params.id;
+  const sql = `
+    SELECT r.*, s.name as studentName, s.email, s.year, s.department, s.interests
+      FROM project_requests r
+      JOIN projects p ON r.project_id = p.id
+      JOIN students s ON r.student_id = s.id
+     WHERE p.faculty_id = ? AND r.status = 'pending'
+     ORDER BY r.createdAt DESC`;
+  const [rows] = await db.query(sql, [facultyId]);
+  res.json(rows);
+});
+
+// Get faculty's own projects
+app.get('/api/faculty/:id/projects', async (req, res) => {
+  const facultyId = req.params.id;
+  const sql = `
+    SELECT *, COUNT(r.id) AS currentStudents
+      FROM projects p
+ LEFT JOIN project_requests r ON p.id = r.project_id AND r.status = 'accepted'
+     WHERE p.faculty_id = ?
+  GROUP BY p.id ORDER BY p.createdAt DESC`;
+  const [rows] = await db.query(sql, [facultyId]);
+  res.json(rows);
+});
+
+// Get active collaborations
+app.get('/api/faculty/:id/active-collaborations', async (req, res) => {
+  const facultyId = req.params.id;
+  const sql = `
+    SELECT r.*, s.name as studentName, s.email, r.respondedAt
+      FROM project_requests r
+      JOIN projects p ON r.project_id = p.id
+      JOIN students s ON r.student_id = s.id
+     WHERE p.faculty_id = ? AND r.status = 'accepted'
+     ORDER BY r.respondedAt DESC`;
+  const [rows] = await db.query(sql, [facultyId]);
+  res.json(rows);
+});
+
+// Accept or reject requests
+app.post('/api/faculty/requests/:reqId/accept', async (req, res) => {
+  await db.query(
+    "UPDATE project_requests SET status='accepted', respondedAt=NOW() WHERE id = ?",
+    [req.params.reqId]
+  );
+  res.sendStatus(200);
+});
+app.post('/api/faculty/requests/:reqId/reject', async (req, res) => {
+  await db.query(
+    "UPDATE project_requests SET status='rejected', respondedAt=NOW() WHERE id = ?",
+    [req.params.reqId]
+  );
+  res.sendStatus(200);
+});
