@@ -233,3 +233,30 @@ app.get("/api/student/:id/abstracts", async (req, res) => {
     return res.status(500).json({ error: "Failed to fetch abstracts" });
   }
 });
+const express = require("express");
+const cors = require("cors");
+const mysql = require("mysql2/promise");
+const app = express();
+
+app.use(cors());
+app.use(express.json());
+// GET user data by ID
+app.get("/api/users/:id", async (req, res) => {
+  const userId = req.params.id;
+
+  try {
+    const [rows] = await db.query("SELECT * FROM users WHERE id = ?", [userId]);
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.json(rows[0]);
+  } catch (err) {
+    console.error("Error fetching user:", err);
+    res.status(500).json({ error: "Server error fetching user" });
+  }
+});
+
+app.listen(5000, () => {
+  console.log("Server running on http://localhost:5000");
+});
