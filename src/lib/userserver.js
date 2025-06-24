@@ -732,3 +732,57 @@ app.post("/api/profile/faculty", async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
+app.post("/api/project-request", async (req, res) => {
+  const {
+    studentId,
+    facultyId,
+    projectType,
+    ideaType,
+    title,
+    description,
+    objectives,
+    methodology,
+    timeline,
+    expectedOutcomes,
+    personalMotivation,
+    relevantExperience,
+    questions,
+  } = req.body;
+
+  if (!studentId || !facultyId || !projectType || !title || !description || !personalMotivation) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+
+  try {
+    const connection = await mysql.createConnection(dbConfig);
+
+    await connection.execute(
+      `INSERT INTO project_requests (
+        student_id, faculty_id, project_type, idea_type,
+        title, description, objectives, methodology, timeline,
+        expected_outcomes, personal_motivation, relevant_experience,
+        questions
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        studentId,
+        facultyId,
+        projectType,
+        ideaType,
+        title,
+        description,
+        objectives || "",
+        methodology || "",
+        timeline || "",
+        expectedOutcomes || "",
+        personalMotivation,
+        relevantExperience || "",
+        questions || "",
+      ]
+    );
+
+    res.json({ message: "Project request submitted successfully" });
+  } catch (err) {
+    console.error("DB Insert Error:", err);
+    res.status(500).json({ error: "Server error while submitting request" });
+  }
+});
