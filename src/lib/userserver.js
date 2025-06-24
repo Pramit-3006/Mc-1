@@ -455,3 +455,62 @@ app.use(express.json());
 app.use(userRoutes);
 
 app.listen(3001, () => console.log("Server running on port 3001"));
+const express = require("express");
+const router = express.Router();
+const db = require("./db"); // Your MySQL DB connection
+
+// Get all projects for a faculty user
+router.get("/api/projects/faculty/:facultyId", (req, res) => {
+  const { facultyId } = req.params;
+
+  const sql = `
+    SELECT 
+      id, title, description, type, duration, difficulty, createdAt, 
+      currentStudents, maxStudents, requiredSkills
+    FROM projects
+    WHERE faculty_id = ?
+    ORDER BY createdAt DESC
+  `;
+
+  db.query(sql, [facultyId], (err, results) => {
+    if (err) {
+      console.error("Error fetching faculty projects:", err);
+      return res.status(500).json({ error: "Database error" });
+    }
+
+    // Parse requiredSkills JSON string into array
+    const parsedResults = results.map((project) => ({
+      ...project,
+      requiredSkills: project.requiredSkills ? JSON.parse(project.requiredSkills) : [],
+    }));
+
+    res.json(parsedResults);
+  });
+});
+
+// Delete a project
+router.delete("/api/projects/:projectId", (req, res) => {
+  const { projectId } = req.params;
+
+  const sql = "DELETE FROM projects WHERE id = ?";
+  db.query(sql, [projectId], (err, result) => {
+    if (err) {
+      console.error("Error deleting project:", err);
+      return res.status(500).json({ error: "Database error" });
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Project not found" });
+    }
+
+    res.json({ message: "Project deleted successfully" });
+  });
+});
+
+module.exports = router;
+const express = require("express");
+const app = express();
+const userRoutes = require("./path/to/this/router"); // Adjust path accordingly
+
+app.use(express.json());
+app.use(userRoutes);
