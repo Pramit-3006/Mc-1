@@ -290,3 +290,30 @@ app.post("/api/project-requests", async (req, res) => {
     res.status(500).json({ error: "Failed to send request" });
   }
 });
+// Get single faculty
+app.get("/api/faculty/:id", async (req, res) => {
+  const [rows] = await db.query("SELECT * FROM faculty WHERE id = ?", [req.params.id]);
+  if (rows.length === 0) return res.status(404).json({ error: "Not found" });
+  const f = rows[0];
+  f.specialization = JSON.parse(f.specialization);
+  f.researchAreas = JSON.parse(f.researchAreas);
+  res.json(f);
+});
+
+// Get faculty’s projects
+app.get("/api/faculty/:id/projects", async (req, res) => {
+  const [rows] = await db.query("SELECT * FROM projects WHERE faculty_id = ?", [req.params.id]);
+  res.json(rows);
+});
+
+// Submit a project request
+app.post("/api/project-requests", async (req, res) => {
+  const { studentId, facultyId, projectType, ideaType } = req.body;
+  await db.query(`
+    INSERT INTO project_requests
+      (student_id, faculty_id, project_type, idea_type)
+    VALUES (?, ?, ?, ?)`,
+    [studentId, facultyId, projectType, ideaType]
+  );
+  res.status(201).json({ message: "Request sent" });
+});
