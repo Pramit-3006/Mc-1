@@ -1,13 +1,16 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { UserNav } from "../components/UserNav";
 import StudentDashboard from "./StudentDashboard";
 import FacultyDashboard from "./FacultyDashboard";
+import axios from "axios";
 
 export default function Dashboard() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const [userData, setUserData] = useState(null);
+  const [dataLoading, setDataLoading] = useState(true);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -15,7 +18,23 @@ export default function Dashboard() {
     }
   }, [user, loading, navigate]);
 
-  if (loading) {
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (user?.id) {
+        try {
+          const res = await axios.get(`/api/users/${user.id}`);
+          setUserData(res.data);
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+        } finally {
+          setDataLoading(false);
+        }
+      }
+    };
+    fetchUserData();
+  }, [user]);
+
+  if (loading || dataLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -26,9 +45,7 @@ export default function Dashboard() {
     );
   }
 
-  if (!user) {
-    return null;
-  }
+  if (!userData) return null;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -48,7 +65,11 @@ export default function Dashboard() {
 
       {/* Dashboard Content */}
       <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        {user.role === "student" ? <StudentDashboard /> : <FacultyDashboard />}
+        {userData.role === "student" ? (
+          <StudentDashboard studentData={userData} />
+        ) : (
+          <FacultyDashboard facultyData={userData} />
+        )}
       </main>
     </div>
   );
