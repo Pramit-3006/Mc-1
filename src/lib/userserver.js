@@ -990,3 +990,82 @@ app.get("/api/faculty", async (req, res) => {
 });
 
 app.listen(3001, () => console.log("Server running on http://localhost:3001"));
+// userserver.js
+
+const express = require("express");
+const mysql = require("mysql2");
+const bodyParser = require("body-parser");
+const cors = require("cors");
+
+
+
+app.use(cors());
+app.use(bodyParser.json());
+
+
+db.connect((err) => {
+  if (err) {
+    console.error("DB connection error:", err);
+  } else {
+    console.log("Connected to MySQL database.");
+  }
+});
+
+// Utility to calculate score
+const calculateScore = (analysis) => {
+  let score = 0;
+  const maxScore = 100;
+
+  // Research (5 points)
+  if (analysis.research?.patents?.length > 0) score += 5;
+
+  // Achievements (10 points)
+  if (analysis.achievements?.length > 0) score += 10;
+
+  return Math.min(score, maxScore);
+};
+
+// API: Upload and score resume
+app.post("/api/resume", (req, res) => {
+  const { name, email, research, achievements } = req.body;
+
+  const analysis = { research, achievements };
+  const score = calculateScore(analysis);
+
+  const sql =
+    "INSERT INTO resumes (name, email, research_patents, achievements, score) VALUES (?, ?, ?, ?, ?)";
+  db.query(
+    sql,
+    [
+      name,
+      email,
+      JSON.stringify(research?.patents || []),
+      JSON.stringify(achievements || []),
+      score,
+    ],
+    (err, result) => {
+      if (err) {
+        console.error("Insert error:", err);
+        res.status(500).json({ error: "Failed to save resume" });
+      } else {
+        res.status(200).json({ message: "Resume saved", score });
+      }
+    }
+  );
+});
+
+// API: Get all resumes
+app.get("/api/resumes", (req, res) => {
+  db.query("SELECT * FROM resumes", (err, results) => {
+    if (err) {
+      console.error("Fetch error:", err);
+      res.status(500).json({ error: "Failed to fetch resumes" });
+    } else {
+      res.status(200).json(results);
+    }
+  });
+});
+
+app.listen(PORT, () => {
+  console.log(Server running on http://localhost:${PORT});
+});
