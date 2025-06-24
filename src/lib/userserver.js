@@ -891,3 +891,43 @@ app.post('/api/profile/faculty', async (req, res) => {
     res.status(500).json({ error: 'Server error while saving profile' });
   }
 });
+app.get('/api/dashboard/student/:userId', async (req, res) => {
+  const userId = req.params.userId;
+
+  try {
+    const connection = await mysql.createConnection(dbConfig);
+
+    // Fetch student's project requests
+    const [projectRequests] = await connection.execute(`
+      SELECT pr.*, fp.name as facultyName, fp.department
+      FROM project_requests pr
+      LEFT JOIN faculty_profiles fp ON pr.faculty_id = fp.user_id
+      WHERE pr.student_id = ?
+    `, [userId]);
+
+    // Fetch featured project ideas (limit 4)
+    const [featuredProjects] = await connection.execute(`
+      SELECT pi.*, fp.name as facultyName, fp.department
+      FROM project_ideas pi
+      LEFT JOIN faculty_profiles fp ON pi.faculty_id = fp.user_id
+      ORDER BY pi.created_at DESC
+      LIMIT 4
+    `);
+
+    // Fetch top faculty (limit 3)
+    const [topFaculty] = await connection.execute(`
+      SELECT * FROM faculty_profiles
+      ORDER BY experience DESC
+      LIMIT 3
+    `);
+
+    res.json({
+      myProjects: projectRequests,
+      featuredProjects,
+      topFaculty,
+    });
+  } catch (err) {
+    console.error('Dashboard fetch error:', err);
+    res.status(500).json({ error: 'Server error loading dashboard' });
+  }
+});
