@@ -202,3 +202,34 @@ app.post('/api/faculty/requests/:reqId/reject', async (req, res) => {
   );
   res.sendStatus(200);
 });
+// POST: student submits an abstract
+app.post("/api/student/abstracts", async (req, res) => {
+  const { studentId, title, abstract, keywords, methodology, expectedOutcomes } = req.body;
+  try {
+    await db.query(
+      `INSERT INTO student_abstracts
+        (student_id, title, abstract, keywords, methodology, expected_outcomes)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [studentId, title, abstract, keywords, methodology, expectedOutcomes]
+    );
+    return res.status(201).json({ message: "Abstract submitted successfully" });
+  } catch (err) {
+    console.error("Abstract submission error:", err);
+    return res.status(500).json({ error: "Failed to submit abstract" });
+  }
+});
+
+// GET: student views own abstracts
+app.get("/api/student/:id/abstracts", async (req, res) => {
+  const studentId = req.params.id;
+  try {
+    const [rows] = await db.query(
+      "SELECT * FROM student_abstracts WHERE student_id = ? ORDER BY created_at DESC",
+      [studentId]
+    );
+    return res.json(rows);
+  } catch (err) {
+    console.error("Fetch abstracts error:", err);
+    return res.status(500).json({ error: "Failed to fetch abstracts" });
+  }
+});
