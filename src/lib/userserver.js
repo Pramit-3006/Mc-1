@@ -354,3 +354,44 @@ app.post("/api/student-project-selection", async (req, res) => {
 
   res.status(200).json({ message: "Selection saved" });
 });
+const express = require("express");
+const bcrypt = require("bcrypt");
+const db = require("./db"); // MySQL connection
+const router = express.Router();
+
+// POST /api/auth/login
+router.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+  const [rows] = await db.query("SELECT * FROM users WHERE email = ?", [email]);
+  if (!rows.length) return res.status(401).json({ error: "Invalid credentials" });
+
+  const user = rows[0];
+  const match = await bcrypt.compare(password, user.password_hash);
+  if (!match) return res.status(401).json({ error: "Invalid credentials" });
+
+  delete user.password_hash;
+  res.json({ user });
+});
+
+// POST /api/auth/signup
+router.post("/signup", async (req, res) => {
+  const { name, email, password, role } = req.body;
+  if (!name || !email || !password || !["student","faculty"].includes(role)) {
+    return res.status(400).json({ error: "Invalid input" });
+  }
+
+  const [exists] = await db.query("SELECT id FROM users WHERE email = ?", [email]);
+  if (exists.length) return res.status(409).json({ error: "Email already registered" });
+
+  const hash = await bcrypt.hash(password, 10);
+  const now = new Date();
+  await db.query(
+    "INSERT INTO users (name,email,password_hash,role,created_at) VALUES (?, ?, ?, ?, ?)",
+    [name, email, hash, role, now]
+  );
+
+  const [userRows] = await db.query("SELECT id,name,email,role,created_at FROM users WHERE email = ?", [email]);
+  res.status(201).json({ user: userRows[0] });
+});
+
+module.exports = router;
