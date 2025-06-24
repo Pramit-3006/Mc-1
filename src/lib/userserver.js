@@ -824,3 +824,70 @@ app.post('/api/project-selection', async (req, res) => {
     res.status(500).json({ error: 'Failed to save project types' });
   }
 });
+app.post('/api/profile/faculty', async (req, res) => {
+  const {
+    userId,
+    name,
+    department,
+    position,
+    experience,
+    bio,
+    specialization,
+    researchAreas,
+    publications,
+    currentProjects,
+    office,
+    phone,
+    website,
+  } = req.body;
+
+  if (!userId || !department || !position || !experience || !specialization?.length) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+
+  try {
+    const connection = await mysql.createConnection(dbConfig);
+
+    const [existing] = await connection.execute(
+      'SELECT id FROM faculty_profiles WHERE user_id = ?',
+      [userId]
+    );
+
+    const values = [
+      name, department, position, experience, bio,
+      JSON.stringify(specialization),
+      JSON.stringify(researchAreas),
+      publications || 0,
+      currentProjects || 0,
+      office || '',
+      phone || '',
+      website || '',
+      userId
+    ];
+
+    if (existing.length > 0) {
+      await connection.execute(
+        `UPDATE faculty_profiles SET
+          name=?, department=?, position=?, experience=?, bio=?,
+          specialization=?, research_areas=?, publications=?, current_projects=?,
+          office=?, phone=?, website=? 
+        WHERE user_id=?`,
+        values
+      );
+    } else {
+      await connection.execute(
+        `INSERT INTO faculty_profiles (
+          name, department, position, experience, bio,
+          specialization, research_areas, publications, current_projects,
+          office, phone, website, user_id
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        values
+      );
+    }
+
+    res.json({ message: 'Faculty profile saved successfully' });
+  } catch (err) {
+    console.error('DB Error:', err);
+    res.status(500).json({ error: 'Server error while saving profile' });
+  }
+});
