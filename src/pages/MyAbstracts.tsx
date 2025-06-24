@@ -28,122 +28,19 @@ import { AbstractSubmission, ProjectRequest } from "../lib/types";
 export default function MyAbstracts() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [abstracts, setAbstracts] = useState<(AbstractSubmission & { project: ProjectRequest })[]>([]);
+  const [filter, setFilter] = useState<"all" | "submitted" | "approved" | "needs_revision">("all");
 
-  // Mock data - in production this would come from your backend
-  const [abstracts] = useState<
-    (AbstractSubmission & { project: ProjectRequest })[]
-  >([
-    {
-      id: "1",
-      projectRequestId: "1",
-      studentId: user?.id || "1",
-      title: "AI-powered Code Generation Tools for Software Development",
-      content:
-        "This research proposes the development of intelligent code generation tools using large language models (LLMs) to automate and enhance software development processes. The study will focus on creating a system that can understand natural language requirements and generate high-quality, maintainable code across multiple programming languages. The methodology involves training specialized models on curated datasets of code repositories, implementing context-aware generation algorithms, and developing evaluation metrics for code quality assessment. Expected outcomes include reduced development time, improved code consistency, and enhanced developer productivity. The research will contribute to the field of automated software engineering and provide practical tools for the developer community.",
-      submittedAt: new Date("2024-01-22"),
-      status: "approved",
-      feedback:
-        "Excellent proposal! The research methodology is well-structured and the objectives are clear. I suggest expanding the evaluation section to include user studies with professional developers.",
-      project: {
-        id: "1",
-        studentId: user?.id || "1",
-        facultyId: "2",
-        faculty: {
-          id: "2",
-          name: "Dr. Sarah Johnson",
-          email: "dr.johnson@university.edu",
-          role: "faculty",
-          department: "Computer Science",
-          position: "Associate Professor",
-          specialization: ["Machine Learning", "Data Science", "AI"],
-          experience: 8,
-          createdAt: new Date("2024-01-10"),
-        },
-        projectType: "RESEARCH_PAPER",
-        ideaType: "own_idea",
-        title: "AI-powered Code Generation Tools",
-        description:
-          "Research on developing intelligent code generation tools using large language models.",
-        status: "accepted",
-        createdAt: new Date("2024-01-15"),
-        respondedAt: new Date("2024-01-16"),
-      },
-    },
-    {
-      id: "2",
-      projectRequestId: "2",
-      studentId: user?.id || "1",
-      title: "Blockchain-based Voting System for Enhanced Democracy",
-      content:
-        "This project aims to design and implement a secure, transparent, and verifiable voting system using blockchain technology. The system will address current challenges in electoral processes including vote tampering, lack of transparency, and limited accessibility. The research methodology includes cryptographic protocol design, smart contract development on Ethereum platform, and comprehensive security analysis. The system will feature voter authentication, ballot encryption, immutable vote recording, and real-time result verification. Expected outcomes include a prototype voting system, security analysis report, and performance evaluation comparing traditional and blockchain-based voting methods.",
-      submittedAt: new Date("2024-01-18"),
-      status: "needs_revision",
-      feedback:
-        "Good concept but needs more detail on scalability considerations and privacy protection mechanisms. Please expand the security analysis section.",
-      project: {
-        id: "2",
-        studentId: user?.id || "1",
-        facultyId: "3",
-        faculty: {
-          id: "3",
-          name: "Prof. Michael Williams",
-          email: "prof.williams@university.edu",
-          role: "faculty",
-          department: "Computer Engineering",
-          position: "Professor",
-          specialization: [
-            "Blockchain",
-            "Cybersecurity",
-            "Distributed Systems",
-          ],
-          experience: 12,
-          createdAt: new Date("2024-01-05"),
-        },
-        projectType: "PROJECT",
-        ideaType: "own_idea",
-        title: "Blockchain Voting System",
-        description:
-          "Design and implement a secure blockchain-based voting system.",
-        status: "accepted",
-        createdAt: new Date("2024-01-12"),
-        respondedAt: new Date("2024-01-13"),
-      },
-    },
-    {
-      id: "3",
-      projectRequestId: "3",
-      studentId: user?.id || "1",
-      title: "Smart Wearable Device for Health Monitoring",
-      content:
-        "This project proposes the development of an innovative wearable device that continuously monitors vital health parameters and provides real-time health insights. The device will integrate multiple sensors to track heart rate, blood oxygen levels, body temperature, and physical activity. The research involves hardware design, sensor integration, mobile app development, and machine learning algorithms for health pattern analysis. The system will feature anomaly detection, emergency alerts, and personalized health recommendations.",
-      submittedAt: new Date("2024-01-20"),
-      status: "submitted",
-      project: {
-        id: "3",
-        studentId: user?.id || "1",
-        facultyId: "4",
-        faculty: {
-          id: "4",
-          name: "Dr. Emily Chen",
-          email: "dr.chen@university.edu",
-          role: "faculty",
-          department: "Biomedical Engineering",
-          position: "Assistant Professor",
-          specialization: ["Biomedical Devices", "Health Informatics", "IoT"],
-          experience: 5,
-          createdAt: new Date("2024-01-08"),
-        },
-        projectType: "PATENT",
-        ideaType: "own_idea",
-        title: "Smart Health Wearable",
-        description:
-          "Development of innovative wearable device for continuous health monitoring.",
-        status: "accepted",
-        createdAt: new Date("2024-01-14"),
-        respondedAt: new Date("2024-01-15"),
-      },
-    },
-  ]);
+  useEffect(() => {
+    if (user?.id) {
+      axios.get(`http://localhost:3001/api/abstracts/${user.id}`)
+        .then((res) => setAbstracts(res.data))
+        .catch((err) => console.error("Error fetching abstracts:", err));
+    }
+  }, [user?.id]);
+
+  // ...rest of your unchanged component (filteredAbstracts, getStatusIcon, etc.)
+}
 
   const [filter, setFilter] = useState<
     "all" | "submitted" | "approved" | "needs_revision"
