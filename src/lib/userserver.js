@@ -630,3 +630,105 @@ app.get('/api/profile/:id', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
+const express = require("express");
+const mysql = require("mysql2/promise");
+const cors = require("cors");
+
+const app = express();
+const PORT = 3306;
+
+app.use(cors());
+app.use(express.json());
+
+
+// Save faculty profile (POST)
+app.post("/api/profile/faculty", async (req, res) => {
+  const {
+    userId,
+    name,
+    department,
+    position,
+    experience,
+    bio,
+    specialization,
+    researchAreas,
+    publications,
+    currentProjects,
+    office,
+    phone,
+    website,
+  } = req.body;
+
+  if (!userId || !department || !position || !experience || !specialization?.length) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+
+  try {
+    const connection = await mysql.createConnection(dbConfig);
+
+    const [existing] = await connection.execute(
+      "SELECT id FROM faculty_profiles WHERE user_id = ?",
+      [userId]
+    );
+
+    const profileData = [
+      userId,
+      name,
+      department,
+      position,
+      experience,
+      bio,
+      JSON.stringify(specialization),
+      JSON.stringify(researchAreas),
+      publications || 0,
+      currentProjects || 0,
+      office || "",
+      phone || "",
+      website || "",
+    ];
+
+    if (existing.length > 0) {
+      await connection.execute(
+        `UPDATE faculty_profiles SET 
+          name=?, department=?, position=?, experience=?, bio=?, 
+          specialization=?, research_areas=?, publications=?, current_projects=?, 
+          office=?, phone=?, website=? 
+        WHERE user_id=?`,
+        [
+          name,
+          department,
+          position,
+          experience,
+          bio,
+          JSON.stringify(specialization),
+          JSON.stringify(researchAreas),
+          publications || 0,
+          currentProjects || 0,
+          office || "",
+          phone || "",
+          website || "",
+          userId,
+        ]
+      );
+    } else {
+      await connection.execute(
+        `INSERT INTO faculty_profiles (
+          user_id, name, department, position, experience, bio,
+          specialization, research_areas, publications, current_projects,
+          office, phone, website
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        profileData
+      );
+    }
+
+    res.json({ message: "Faculty profile saved successfully" });
+  } catch (err) {
+    console.error("Error saving profile:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// Start server
+app.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}`);
+});
