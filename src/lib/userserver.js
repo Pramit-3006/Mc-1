@@ -931,3 +931,35 @@ app.get('/api/dashboard/student/:userId', async (req, res) => {
     res.status(500).json({ error: 'Server error loading dashboard' });
   }
 });
+const express = require("express");
+const cors = require("cors");
+const mysql = require("mysql2/promise");
+
+const app = express();
+const PORT = 3001;
+
+app.use(cors());
+app.use(express.json());
+
+const dbConfig = {
+  host: "localhost",
+  user: "root",
+  password: "your_password",
+  database: "your_database",
+};
+
+// Example API: Get all faculty
+app.get("/api/faculty", async (req, res) => {
+  try {
+    const connection = await mysql.createConnection(dbConfig);
+    const [rows] = await connection.execute("SELECT * FROM faculty_profiles");
+    res.json(rows);
+  } catch (err) {
+    console.error("Faculty fetch error:", err);
+    res.status(500).json({ error: "Failed to load faculty" });
+  }
+});
+
+app.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}`);
+});
