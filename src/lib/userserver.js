@@ -963,3 +963,30 @@ app.get("/api/faculty", async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
+const express = require("express");
+const cors = require("cors");
+const mysql = require("mysql2/promise");
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+const dbConfig = {
+  host: "localhost",
+  user: "root",
+  password: "your_password",
+  database: "your_database",
+};
+
+app.get("/api/faculty", async (req, res) => {
+  try {
+    const connection = await mysql.createConnection(dbConfig);
+    const [rows] = await connection.execute("SELECT * FROM faculty_profiles");
+    res.json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch faculty" });
+  }
+});
+
+app.listen(3001, () => console.log("Server running on http://localhost:3001"));
