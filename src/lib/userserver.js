@@ -317,3 +317,40 @@ app.post("/api/project-requests", async (req, res) => {
   );
   res.status(201).json({ message: "Request sent" });
 });
+// Get student selection
+app.get("/api/student-project-selection/:studentId", async (req, res) => {
+  const [rows] = await db.query("SELECT * FROM student_project_selection WHERE student_id = ?", [req.params.studentId]);
+  if (rows.length === 0) return res.json({ projectTypes: [], ideaType: "" });
+
+  const row = rows[0];
+  return res.json({
+    projectTypes: JSON.parse(row.project_types || "[]"),
+    ideaType: row.idea_type || "",
+  });
+});
+
+// Save/update student selection
+app.post("/api/student-project-selection", async (req, res) => {
+  const { studentId, projectTypes, ideaType } = req.body;
+  if (!studentId || !ideaType || !Array.isArray(projectTypes)) {
+    return res.status(400).json({ error: "Invalid request" });
+  }
+
+  const [rows] = await db.query("SELECT * FROM student_project_selection WHERE student_id = ?", [studentId]);
+
+  const jsonTypes = JSON.stringify(projectTypes);
+
+  if (rows.length > 0) {
+    await db.query(
+      "UPDATE student_project_selection SET project_types = ?, idea_type = ? WHERE student_id = ?",
+      [jsonTypes, ideaType, studentId]
+    );
+  } else {
+    await db.query(
+      "INSERT INTO student_project_selection (student_id, project_types, idea_type) VALUES (?, ?, ?)",
+      [studentId, jsonTypes, ideaType]
+    );
+  }
+
+  res.status(200).json({ message: "Selection saved" });
+});
