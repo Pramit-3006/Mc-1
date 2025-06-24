@@ -786,3 +786,41 @@ app.post("/api/project-request", async (req, res) => {
     res.status(500).json({ error: "Server error while submitting request" });
   }
 });
+// Get all available project types
+app.get('/api/project-types', async (req, res) => {
+  try {
+    const connection = await mysql.createConnection(dbConfig);
+    const [types] = await connection.execute('SELECT * FROM project_types');
+    res.json(types);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch project types' });
+  }
+});
+
+// Save user-selected project types
+app.post('/api/project-selection', async (req, res) => {
+  const { userId, selectedTypes } = req.body;
+
+  if (!userId || !Array.isArray(selectedTypes)) {
+    return res.status(400).json({ error: 'Invalid data' });
+  }
+
+  try {
+    const connection = await mysql.createConnection(dbConfig);
+
+    await connection.execute('DELETE FROM user_project_types WHERE user_id = ?', [userId]);
+
+    for (const type of selectedTypes) {
+      await connection.execute(
+        'INSERT INTO user_project_types (user_id, project_type) VALUES (?, ?)',
+        [userId, type]
+      );
+    }
+
+    res.json({ message: 'Project types saved successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to save project types' });
+  }
+});
