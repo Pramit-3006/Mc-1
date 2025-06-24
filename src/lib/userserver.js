@@ -578,3 +578,55 @@ app.post("/api/project-request", (req, res) => {
     return res.status(200).json({ message: "Project request submitted successfully" });
   });
 });
+// userserver.js
+const express = require('express');
+const mysql = require('mysql2/promise');
+const cors = require('cors');
+
+const app = express();
+const PORT = 3001;
+
+app.use(cors());
+app.use(express.json());
+
+// GET /api/profile/:id
+app.get('/api/profile/:id', async (req, res) => {
+  const userId = req.params.id;
+
+  try {
+    const connection = await mysql.createConnection(dbConfig);
+
+    const [users] = await connection.execute(
+      `SELECT * FROM users WHERE id = ?`,
+      [userId]
+    );
+
+    if (users.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const user = users[0];
+
+    let projects = [];
+    if (user.role === 'faculty') {
+      [projects] = await connection.execute(
+        `SELECT * FROM projects WHERE facultyId = ?`,
+        [user.id]
+      );
+    } else {
+      [projects] = await connection.execute(
+        `SELECT * FROM projects WHERE studentId = ?`,
+        [user.id]
+      );
+    }
+
+    res.json({ profile: user, projects });
+  } catch (err) {
+    console.error("Database error:", err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});
