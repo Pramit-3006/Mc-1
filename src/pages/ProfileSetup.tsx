@@ -142,6 +142,28 @@ export default function ProfileSetup() {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
+    // Simulate submission delay
+await new Promise((resolve) => setTimeout(resolve, 2000));
+
+// In production, this would make an API call to save the profile
+console.log("Saving profile:", formData);
+const response = await fetch("/api/profile/faculty", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    userId: user.id,
+    ...formData,
+  }),
+});
+
+const result = await response.json();
+
+if (!response.ok) {
+  throw new Error(result.error || "Unknown error");
+}
+
     e.preventDefault();
     setError("");
 
