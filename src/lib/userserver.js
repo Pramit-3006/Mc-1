@@ -514,3 +514,67 @@ const userRoutes = require("./path/to/this/router"); // Adjust path accordingly
 
 app.use(express.json());
 app.use(userRoutes);
+const express = require("express");
+const app = express();
+const db = require("./db"); // your mysql connection file
+app.use(express.json());
+
+// Submit a new project request from a student
+app.post("/api/project-request", (req, res) => {
+  const {
+    studentId,
+    facultyId,
+    projectType,
+    title,
+    description,
+    objectives,
+    methodology,
+    timeline,
+    expectedOutcomes,
+    personalMotivation,
+    relevantExperience,
+    questions,
+    ideaType,
+    submittedAt,
+  } = req.body;
+
+  if (!studentId || !facultyId || !projectType || !title || !description || !personalMotivation) {
+    return res.status(400).json({ error: "Required fields are missing" });
+  }
+
+  const sql = `
+    INSERT INTO project_requests (
+      student_id, faculty_id, project_type, title, description,
+      objectives, methodology, timeline, expected_outcomes,
+      personal_motivation, relevant_experience, questions,
+      idea_type, submitted_at
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+
+  const values = [
+    studentId,
+    facultyId,
+    projectType,
+    title,
+    description,
+    objectives,
+    methodology,
+    timeline,
+    expectedOutcomes,
+    personalMotivation,
+    relevantExperience,
+    questions,
+    ideaType,
+    new Date(submittedAt),
+  ];
+
+  db.query(sql, values, (err, result) => {
+    if (err) {
+      console.error("Error inserting project request:", err);
+      return res.status(500).json({ error: "Database insertion failed" });
+    }
+
+    return res.status(200).json({ message: "Project request submitted successfully" });
+  });
+});
