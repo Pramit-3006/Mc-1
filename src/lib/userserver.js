@@ -395,3 +395,63 @@ router.post("/signup", async (req, res) => {
 });
 
 module.exports = router;
+const express = require('express');
+const router = express.Router();
+const db = require('./db'); // assume db.js exports a MySQL connection
+
+// Get abstracts for a student
+router.get('/api/abstracts/:studentId', (req, res) => {
+  const { studentId } = req.params;
+  const sql = `
+    SELECT a.*, p.*, f.name as faculty_name, f.department as faculty_department
+    FROM abstracts a
+    JOIN projects p ON a.projectRequestId = p.id
+    JOIN users f ON p.facultyId = f.id
+    WHERE a.studentId = ?`;
+
+  db.query(sql, [studentId], (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+
+    const formatted = results.map(row => ({
+      id: row.a_id,
+      title: row.a_title,
+      content: row.a_content,
+      status: row.a_status,
+      feedback: row.a_feedback,
+      submittedAt: row.a_submittedAt,
+      projectRequestId: row.projectRequestId,
+      studentId: row.studentId,
+      project: {
+        id: row.p_id,
+        title: row.p_title,
+        description: row.p_description,
+        facultyId: row.facultyId,
+        studentId: row.studentId,
+        projectType: row.projectType,
+        ideaType: row.ideaType,
+        status: row.p_status,
+        createdAt: row.p_createdAt,
+        respondedAt: row.p_respondedAt,
+        faculty: {
+          id: row.facultyId,
+          name: row.faculty_name,
+          department: row.faculty_department,
+        }
+      }
+    }));
+
+    res.json(formatted);
+  });
+});
+
+module.exports = router;
+const express = require('express');
+const cors = require('cors');
+const app = express();
+const userRoutes = require('./userRoutes'); // or whatever filename above is
+
+app.use(cors());
+app.use(express.json());
+app.use(userRoutes);
+
+app.listen(3001, () => console.log("Server running on port 3001"));
