@@ -260,3 +260,33 @@ app.get("/api/users/:id", async (req, res) => {
 app.listen(5000, () => {
   console.log("Server running on http://localhost:5000");
 });
+// Fetch all faculty
+app.get("/api/faculty", async (req, res) => {
+  try {
+    const [rows] = await db.query("SELECT * FROM faculty");
+    rows.forEach(f => {
+      if (f.specialization) f.specialization = JSON.parse(f.specialization);
+      if (f.researchAreas) f.researchAreas = JSON.parse(f.researchAreas);
+    });
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: "Cannot fetch faculty" });
+  }
+});
+
+// Handle new project requests by students
+app.post("/api/project-requests", async (req, res) => {
+  const { studentId, facultyId, projectType, ideaType } = req.body;
+  try {
+    await db.query(
+      `INSERT INTO project_requests
+       (student_id, faculty_id, project_type, idea_type)
+       VALUES (?, ?, ?, ?)`,
+      [studentId, facultyId, projectType, ideaType]
+    );
+    res.status(201).json({ message: "Request sent" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to send request" });
+  }
+});
